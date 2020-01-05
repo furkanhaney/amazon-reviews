@@ -1,9 +1,9 @@
 import re
-import glob
+import argparse
 import numpy as np
 import pandas as pd
 import multiprocessing as mp
-from tqdm import tqdm, trange
+from tqdm import tqdm
 from nltk import word_tokenize
 
 
@@ -13,14 +13,12 @@ def get_data():
 
 
 def clean_review(text):
-    if text is None:
-        return ""
     text = text.lower()
     for code in [r"\\", "<br />", "<BR>"]:
         text = text.replace(code, "")
     text = text.replace("&quot;", "'")
     text = re.sub(r"\[\[.*]]", "", text)
-    return text
+    return word_tokenize(text)
 
 
 def print_summary(df):
@@ -32,27 +30,32 @@ def print_summary(df):
 
 
 def main():
-    MAX_WORDS = 512
-    #pool = mp.Pool(4)
-    path = glob.glob("data/")[0]
-    df = pd.read_parquet(path, columns=["review_body", "star_rating"])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path", type=str, default="data/")
+    parser.add_argument("--threads", type=int, default=4)
+    parser.add_argument("--max_words", type=int, default=512)
+    args = parser.parse_args()
+
+    pool = mp.Pool(args.threads)
+    df = pd.read_parquet(args.path, columns=["review_body", "star_rating"])
     df = df[df["review_body"].str.len() >= 10]
     reviews = list(df["review_body"])
     ratings = list(df["star_rating"])
 
     word_set = {}
-    reviews_array = np.zeros((len(reviews), MAX_WORDS), dtype=np.int64)
+    reviews_array = np.zeros((len(reviews), args.max_words), dtype=np.int64)
     ratings = np.array(ratings, dtype=np.int64)
 
-    for i, review in tqdm(enumerate(reviews), total=len(reviews)):
-        review = clean_review(review)
-        review = word_tokenize(review)
+    pbar = tqdm(desc="Processing the text.", total=len(reviews), ascii=True)
+    for i, review in enumerate(pool.imap(clean_review, reviews)):
         for j, word in enumerate(review):
-            if j == MAX_WORDS:
+            if j == args.max_words:
                 break
             if word not in word_set:
                 word_set[word] = len(word_set) + 1
             reviews_array[i, j] = word_set[word]
+        pbar.update()
+    pbar.close()
 
     print("Dictionary Size: {:,}".format(len(word_set)))
     np.save("data/reviews.npy", reviews_array)
