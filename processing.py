@@ -1,6 +1,5 @@
 import re
 import glob
-import pickle
 import numpy as np
 import pandas as pd
 import multiprocessing as mp
@@ -35,7 +34,7 @@ def print_summary(df):
 def main():
     MAX_WORDS = 512
     #pool = mp.Pool(4)
-    path = "C:/machine_learning/datasets_original/amazon_reviews/parquet/part-00000-495c48e6-96d6-4650-aa65-3c36a3516ddd.c000.snappy.parquet"
+    path = glob.glob("data/")[0]
     df = pd.read_parquet(path, columns=["review_body", "star_rating"])
     df = df[df["review_body"].str.len() >= 10]
     reviews = list(df["review_body"])
