@@ -1,5 +1,9 @@
-data/
-old/
+data/*
+old/*
+output/*
+processed/*
+*.code-workspace
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
