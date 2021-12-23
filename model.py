@@ -1,5 +1,6 @@
 import torch.nn as nn
-from manta.layers import GlobalAvgPooling, Conv1D
+from manta.layers.layers import GlobalAvgPooling
+from manta.layers.conv import Conv1D
 
 
 class Classifier(nn.Module):
@@ -22,7 +23,7 @@ class Classifier(nn.Module):
             Conv1D(512, 512),
             GlobalAvgPooling(),
             nn.Linear(512, 5),
-            nn.LogSoftmax(dim=1)
+            nn.LogSoftmax(dim=1),
         )
 
     def forward(self, x):
