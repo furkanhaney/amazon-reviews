@@ -1,5 +1,9 @@
 # Amazon Reviews Classifier
 
+![](./readme/header.png)
+
+Alberta's training curve :/
+
 ## Description
 
 This repository explores different different Deep Learning models on the Amazon Reviews dataset (can be found [here](https://s3.amazonaws.com/amazon-reviews-pds/readme.html))
